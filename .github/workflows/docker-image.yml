@@ -14,15 +14,15 @@ jobs:
           fetch-depth: 0
       - name: Show recent commits
         run: git log --oneline -n 10
-      - name: Determine which Dockerfiles changed
+      - name: Determine which Dockerfiles changed or whether root start script changed
         id: detect
         run: |
-          changed=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'Dockerfile$' || true)
+          changed=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '(^|/)Dockerfile$|^start\.sh$' || true)
           root_changed=false
           sub_paths=()
 
           while IFS= read -r file; do
-            if [[ "$file" == "Dockerfile" ]]; then
+            if [[ "$file" == "Dockerfile" || "$file" == "start.sh" ]]; then
               root_changed=true
             elif [[ "$file" =~ ^([^/]+)/Dockerfile$ ]]; then
               sub_paths+=("${BASH_REMATCH[1]}")
